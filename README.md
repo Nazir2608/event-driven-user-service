@@ -1,164 +1,104 @@
-Event-Driven User Service
+# Event-Driven User Service
 
-A production-ready Spring Boot backend project demonstrating event-driven architecture using Spring Application Events to build scalable and loosely coupled systems.
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-17-orange)](https://www.oracle.com/java/)
+[![Architecture](https://img.shields.io/badge/Architecture-Event--Driven-blue)](#-architecture)
 
-🧩 Problem This Project Solves
+A high-performance Spring Boot microservice demonstrating **Event-Driven Architecture (EDA)**. This project showcases how to decouple core business logic from side effects using **Spring Application Events** and asynchronous processing.
 
-In traditional backend systems, services are tightly coupled.
+---
 
-Example:
+## 🧩 The Challenge: Tight Coupling
+In traditional designs, a single service method handles too many responsibilities.
 
+### The "Before" (Anti-Pattern)
+```java
 public void register(User user) {
-    userRepository.save(user);
-    emailService.sendEmail(user);
-    auditService.log(user);
-    notificationService.notify(user);
+    userRepository.save(user); // Core Logic
+    emailService.sendWelcomeEmail(user); // Side Effect
+    auditService.logRegistration(user);  // Side Effect
+    notificationService.notifyAdmin(user); // Side Effect
 }
-❌ Problems:
 
-Business logic tightly coupled to multiple services
+```
 
-Hard to maintain
+* **❌ Risks:** High latency, violation of SRP (Single Responsibility Principle), and difficult-to-test code.
 
-Difficult to scale
+---
 
-Violates Single Responsibility Principle
+## ✅ The Solution: Event-Driven Design
 
-Adding new functionality requires modifying existing code
+The `UserService` focuses solely on persistence and emits a `UserRegisteredEvent`.
 
-Slows down response due to synchronous execution
+### 🏗️ Workflow
 
-✅ Solution: Event-Driven Architecture
+1. **Client** hits `POST /users/register`.
+2. **UserService** persists the User to the Database.
+3. **ApplicationEventPublisher** broadcasts a `UserRegisteredEvent`.
+4. **Listeners** (`@EventListener` / `@Async`) intercept the event independently.
 
-This project solves the above problems using Spring Application Events.
+---
 
-Instead of directly calling dependent services, we:
+## ⚡ Key Architectural Benefits
 
-Save the user
+| Feature | Description |
+| --- | --- |
+| **Loose Coupling** | `UserService` has zero knowledge of email or audit logic. |
+| **Non-Blocking** | Side effects run on separate threads for faster responses. |
+| **Scalability** | Easily add new listeners without touching core code. |
+| **Resilience** | Listener failures don't impact the primary transaction. |
 
-Publish a UserRegisteredEvent
+---
 
-Let independent listeners handle side effects asynchronously
+## 📂 Project Structure
 
-🏗️ How It Works
-POST /users/register
-        ↓
-UserController
-        ↓
-UserService
-        ↓
-Save User in Database
-        ↓
-Publish UserRegisteredEvent
-        ↓
- ├── EmailListener (Async)
- ├── AuditListener (Async)
- └── NotificationListener (Async)
-Key Idea
-
-UserService does not know:
-
-Who sends email
-
-Who logs audit
-
-Who calls external systems
-
-It only publishes an event.
-
-This ensures:
-
-Loose coupling
-
-Better scalability
-
-Cleaner architecture
-
-Easy extensibility
-
-⚡ Why Event-Driven Design?
-
-This architecture is used in:
-
-E-commerce platforms
-
-Banking systems
-
-Microservices architecture
-
-Kafka-based distributed systems
-
-Domain-Driven Design systems
-
-It allows:
-
-Non-blocking background processing
-
-Independent service evolution
-
-High maintainability
-
-Open/Closed Principle compliance
-
-🛠️ Tech Stack
-
-Java 17
-
-Spring Boot 3
-
-Spring Web
-
-Spring Data JPA
-
-H2 In-Memory Database
-
-Lombok
-
-Maven
-
-📂 Project Structure
+```text
 com.nazir.userservice
-│
-├── controller      → REST APIs
-├── service         → Business logic
-├── repository      → JPA repositories
-├── entity          → Database entities
-├── event           → Domain events
-├── listener        → Event listeners
-└── config          → Async configuration
-🚀 Features
+├── config      → Async & TaskExecutor configurations
+├── controller  → REST Endpoints (Web Layer)
+├── entity      → JPA Data Models
+├── event       → Immutable Domain Events
+├── listener    → Asynchronous Event Handlers
+├── repository  → Data Access Layer
+└── service     → Core Business Logic & Event Publishing
 
-Publish domain events using ApplicationEventPublisher
+```
 
-Asynchronous event listeners using @Async
+---
 
-Clean layered architecture
+## ▶️ Getting Started
 
-Transaction-safe event triggering
+### Installation
 
-Extensible and scalable design
-
-Ready for microservice transformation
-
-▶️ Getting Started
-1️⃣ Clone the repository
-git clone https://github.com/your-username/event-driven-user-service.git
+```bash
+git clone [https://github.com/your-username/event-driven-user-service.git](https://github.com/your-username/event-driven-user-service.git)
 cd event-driven-user-service
-2️⃣ Build
 mvn clean install
-3️⃣ Run
 mvn spring-boot:run
 
-Application runs on:
+```
 
-http://localhost:8080
-📮 API
-Register User
-POST /users/register
+### 📮 API Documentation
 
-Request Body:
+**POST** `/users/register`
 
+**Request:**
+
+```json
 {
   "name": "Nazir",
   "email": "nazir@example.com"
 }
+
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "id": 1,
+  "name": "Nazir",
+  "status": "Registration processing..."
+}
+
+```
