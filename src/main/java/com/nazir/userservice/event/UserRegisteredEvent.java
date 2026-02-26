@@ -1,11 +1,13 @@
 package com.nazir.userservice.event;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserRegisteredEvent {
-    private final Long userId;
-    private final String email;
+    private Long userId;
+    private String email;
 }
