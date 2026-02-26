@@ -71,7 +71,7 @@ com.nazir.userservice
 ### Installation
 
 ```bash
-git clone [https://github.com/your-username/event-driven-user-service.git](https://github.com/your-username/event-driven-user-service.git)
+git clone [https://github.com/Nazir2608/event-driven-user-service.git](https://github.com/Nazir2608/event-driven-user-service.git)
 cd event-driven-user-service
 mvn clean install
 mvn spring-boot:run
