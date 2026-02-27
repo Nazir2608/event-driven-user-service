@@ -10,6 +10,7 @@ import com.nazir.userservice.event.UserRegisteredEvent;
 import com.nazir.userservice.repository.OutboxEventRepository;
 import com.nazir.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -25,8 +27,9 @@ public class UserService {
     private final ObjectMapper objectMapper;
 
     public UserResponse register(UserRequest request) {
-
+        log.info("Attempting to register user with email: {}", request.getEmail());
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Registration failed: Email {} is already registered", request.getEmail());
             throw new RuntimeException("Email already registered");
         }
         // 1. Save User
@@ -43,6 +46,7 @@ public class UserService {
                 .build();
 
         outboxEventRepository.save(event);
+        log.info("User registered successfully with id: {} and OutboxEvent created", saved.getId());
         // 3. Return response
         return mapToResponse(saved);
     }
@@ -50,8 +54,9 @@ public class UserService {
     private String convertToJson(User user) {
         try {
             UserRegisteredEvent event = new UserRegisteredEvent(user.getId(), user.getEmail());
-          return   objectMapper.writeValueAsString(event);
+            return objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
+            log.error("Failed to serialize event payload for user id: {}", user.getId(), e);
             throw new RuntimeException("Failed to serialize event payload", e);
         }
     }

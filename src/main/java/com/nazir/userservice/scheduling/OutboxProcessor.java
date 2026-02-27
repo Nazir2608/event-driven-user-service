@@ -22,7 +22,6 @@ public class OutboxProcessor {
     private final ObjectMapper objectMapper;
     private final KafkaEventPublisher kafkaPublisher;
 
-
     @Scheduled(fixedDelay = 10000)
     @Transactional
     public void processOutboxEvents() {
@@ -31,10 +30,10 @@ public class OutboxProcessor {
             try {
                 // Convert JSON payload back to event object
                 UserRegisteredEvent userEvent = objectMapper.readValue(event.getPayload(), UserRegisteredEvent.class);
-                kafkaPublisher.publishAndWait(String.valueOf(event.getAggregateId()),userEvent);
+                kafkaPublisher.publishAndWait(String.valueOf(event.getAggregateId()), userEvent);
                 event.setStatus("PROCESSED");
             } catch (Exception e) {
-                log.error("Failed to process event {}", event.getId());
+                log.error("Failed to process event {}", event.getId(), e);
                 event.setStatus("FAILED");
             }
         }
