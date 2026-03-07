@@ -6,20 +6,22 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/userdb   # overridden to postgres:5432 in Docker
+    username: nazir
+    password: secret
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
-  h2:
-    console:
-      enabled: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9092             # overridden to kafka:29092 in Docker
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
